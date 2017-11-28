@@ -418,7 +418,19 @@ public class Connection {
         messageHistory.add(0, msg);
         if(subscriptions.containsKey(topic)){
             subscriptions.get(topic).setLastMessage(new String(message.getPayload()));
-            if(subscriptions.get(topic).isEnableNotifications()){
+
+            if(new String(message.getPayload()).contains("package")){
+                String[] payloadSplit = new String(message.getPayload()).split(";");
+
+                String packageApp = payloadSplit[0].split("=")[1];
+                String versionCode = payloadSplit[1].split("=")[1];
+                System.out.println("Installing: " + packageApp);
+
+                Intent intent = new Intent("org.fdroid.fdroid.ACTION_INSTALL");
+                intent.putExtra("EXTRA_PACKAGE",packageApp);
+                intent.putExtra("EXTRA_VERSION_CODE",Integer.parseInt(versionCode));
+                context.startActivity(intent);
+            }else if(subscriptions.get(topic).isEnableNotifications()){
                 //create intent to start activity
                 Intent intent = new Intent();
                 intent.setClassName(context, activityClass);

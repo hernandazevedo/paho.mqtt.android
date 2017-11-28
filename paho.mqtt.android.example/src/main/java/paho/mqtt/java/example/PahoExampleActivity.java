@@ -13,6 +13,8 @@
  */
 package paho.mqtt.java.example;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -37,15 +39,19 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import java.util.ArrayList;
 
 public class PahoExampleActivity extends AppCompatActivity{
+    public static final int REQUEST_CODE = 55523;
     private HistoryAdapter mAdapter;
 
     MqttAndroidClient mqttAndroidClient;
 
-    final String serverUri = "tcp://iot.eclipse.org:1883";
+    public static final String EXTRA_PACKAGE = "EXTRA_PACKAGE";
+    public static final String EXTRA_VERSION_CODE = "EXTRA_VERSION_CODE";
+
+    final String serverUri = "tcp://192.168.1.131:1883";
 
     String clientId = "ExampleAndroidClient";
-    final String subscriptionTopic = "exampleAndroidTopic";
-    final String publishTopic = "exampleAndroidPublishTopic";
+    final String subscriptionTopic = "test";
+    final String publishTopic = "test";
     final String publishMessage = "Hello World!";
 
 
@@ -95,7 +101,10 @@ public class PahoExampleActivity extends AppCompatActivity{
 
             @Override
             public void messageArrived(String topic, MqttMessage message) throws Exception {
-                addToHistory("Incoming message: " + new String(message.getPayload()));
+                String payLoad = new String(message.getPayload());
+                addToHistory("Incoming message: " + payLoad);
+
+
             }
 
             @Override
@@ -187,7 +196,20 @@ public class PahoExampleActivity extends AppCompatActivity{
                 @Override
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
                     // message Arrived!
+                    String payLoad =  new String(message.getPayload());
                     System.out.println("Message: " + topic + " : " + new String(message.getPayload()));
+                    if(payLoad.contains("package")){
+                        String[] payloadSplit = payLoad.split(";");
+
+                        String packageApp = payloadSplit[0].split("=")[1];
+                        String versionCode = payloadSplit[1].split("=")[1];
+                        System.out.println("Installing: " + packageApp);
+
+                        Intent intent = new Intent("org.fdroid.fdroid.ACTION_INSTALL");
+                        intent.putExtra(EXTRA_PACKAGE,packageApp);
+                        intent.putExtra(EXTRA_VERSION_CODE,Integer.parseInt(versionCode));
+                        startActivityForResult(intent, REQUEST_CODE);
+                    }
                 }
             });
 
@@ -212,5 +234,19 @@ public class PahoExampleActivity extends AppCompatActivity{
             e.printStackTrace();
         }
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == REQUEST_CODE) {
+            if(resultCode == Activity.RESULT_OK){
+
+                System.out.print("Message enqeued");
+            }
+            if (resultCode == Activity.RESULT_CANCELED) {
+                System.out.print("Error enqeueing message");
+            }
+        }
+    }//on
 
 }

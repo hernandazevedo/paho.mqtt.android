@@ -95,3 +95,6 @@ hs_err_pid*
 
 
 org.eclipse.paho.android.sample/libs/
+org.eclipse.paho.android.sample/gradle/
+org.eclipse.paho.android.sample/gradlew/
+org.eclipse.paho.android.sample/gradlew.bat
